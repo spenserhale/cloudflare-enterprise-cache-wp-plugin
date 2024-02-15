@@ -1,0 +1,12 @@
+/.github/
+/.idea/
+/build/
+/tests/
+.gitignore
+.wp-env.json
+phpunit.xml
+phpunit.xml.dist
+phpstan.extension.neon
+DOCKER_ENV
+docker_tag
+output.log
