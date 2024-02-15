@@ -1,5 +1,5 @@
 {
-    "name": "spenserhale/cloudflare-enterprise-cache",
+    "name": "spenserhale/cloudflare-enterprise-cache-wp-plugin",
     "description": "Automation for managing Cloudflare enterprise cache for WordPress sites",
     "type": "wordpress-plugin",
     "license": "GPL-3.0-or-later",
