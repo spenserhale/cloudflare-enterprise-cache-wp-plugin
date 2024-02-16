@@ -2,11 +2,12 @@
 
 namespace CF\EntCache;
 
+use JsonSerializable;
 use stdClass;
 use Throwable;
 use WP_Error;
 
-class ApiResponse {
+class ApiResponse implements JsonSerializable {
 
 	public static function fromStdClass( stdClass $stdClass ): self {
 		return new self(
@@ -47,15 +48,15 @@ class ApiResponse {
 
 	/**
 	 * @param bool $success
-	 * @param array{ code: int|string, message: string } $errors
-	 * @param array{ code: int|string, message: string } $messages
+	 * @param array<array{ code: int|string, message: string }> $errors
+	 * @param array<array{ code: int|string, message: string }> $messages
 	 * @param mixed $result
 	 */
 	public function __construct(
-		private readonly bool $success,
-		private array $errors,
-		private array $messages,
-		private mixed $result,
+		public readonly bool $success,
+        public array $errors,
+        public array $messages,
+        public mixed $result,
 	) {
 	}
 
@@ -63,10 +64,16 @@ class ApiResponse {
 		return $this->success;
 	}
 
+    /**
+     * @return array<array{ code: int|string, message: string }>
+     */
 	public function getErrors(): array {
 		return $this->errors;
 	}
 
+    /**
+     * @return array<array{ code: int|string, message: string }>
+     */
 	public function getMessages(): array {
 		return $this->messages;
 	}
@@ -98,5 +105,16 @@ class ApiResponse {
 
 		return $this;
 	}
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'success' => $this->success,
+            'errors' => $this->errors,
+            'messages' => $this->messages,
+            'result' => $this->result,
+        ];
+    }
+
 
 }
