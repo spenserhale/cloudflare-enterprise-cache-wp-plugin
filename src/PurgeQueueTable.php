@@ -28,15 +28,13 @@ class PurgeQueueTable
 
     /**
      * @param  array<array{type: string, content: string}>  $values
-     *
-     * @return bool
      */
-    public static function insertMany(array $values): bool
+    public static function insertMany(array $values): int|false
     {
         global $wpdb;
         $values = array_map(static fn($i) => $wpdb->prepare('(%s, %s)', $i['type'], $i['content']), $values);
 
-        return (bool) $wpdb->query(sprintf(
+        return $wpdb->query(sprintf(
             'INSERT INTO %s (type, content) VALUES %s',
             $wpdb->prefix.self::TABLE,
             implode(',', $values)
