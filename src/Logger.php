@@ -30,4 +30,12 @@ class Logger {
 		}
 	}
 
+    public static function logWpError(\WP_Error $error): void
+    {
+        foreach ( $error->get_error_codes() as $code ) {
+            $data = $error->get_error_data( $code );
+            self::error($error->get_error_message( $code ), compact('code', 'data'));
+        }
+    }
+
 }
