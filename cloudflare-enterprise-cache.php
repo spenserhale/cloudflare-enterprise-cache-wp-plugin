@@ -79,4 +79,4 @@ register_activation_hook( __FILE__, '\CF\EntCache\PurgeQueueTable::createTable' 
 add_filter( 'cf/ent_cache/create_table', '\CF\EntCache\PurgeQueueTable::createTable' );
 add_filter( 'cf/ent_cache/queue_many', '\CF\EntCache\PurgeQueueTable::insertMany' );
 add_filter( 'cf/ent_cache/process_queue', '\CF\EntCache\PurgeQueueService::processQueue' );
-add_filter( 'cf/ent_cache/purge_cache', '\CF\EntCache\ApiClient::purgeCache' );
+add_filter( 'cf/ent_cache/purge_cache', '\CF\EntCache\ApiClient::purgeCacheStatic' );

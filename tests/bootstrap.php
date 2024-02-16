@@ -19,7 +19,7 @@ require_once __DIR__ . '/../vendor/yoast/phpunit-polyfills/phpunitpolyfills-auto
 require_once $_phpunit_dir.'/includes/functions.php';
 
 tests_add_filter( 'muplugins_loaded', static function() {
-    require_once __DIR__.'/../cloudflare-enterprise-cache-wp-plugin.php';
+    require_once __DIR__.'/../cloudflare-enterprise-cache.php';
 } );
 
 define('WP_TESTS_CONFIG_FILE_PATH', __DIR__.'/wp-config.php');
