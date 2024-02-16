@@ -2,11 +2,12 @@
 
 namespace CF\EntCache;
 
+use InvalidArgumentException;
 use JsonException;
 use WP_Error;
 
 /**
- * @method static ApiResponse purgeCache( array $data )
+ * @method static ApiResponse purgeCacheStatic( array $data )
  */
 readonly class ApiClient {
 
@@ -21,6 +22,8 @@ readonly class ApiClient {
 	}
 
 	public static function __callStatic( string $name, array $arguments ) {
+        $name = str_replace('Static', '', $name);
+
 		return self::getInstance()->$name( ... $arguments );
 	}
 
@@ -33,7 +36,43 @@ readonly class ApiClient {
 	) {
 	}
 
-	/**
+    /**
+     * Group the items by type to format for making a purge request.
+     *
+     * @param  array<object{type: string, content: string}>|array<array{type: string, content: string}>  $items
+     *
+     * @return array{
+     *       files?: string[],
+     *       hosts?: string[],
+     *       prefixes?: string[],
+     *       tags?: string[]
+     *   }
+     */
+    public static function makePurgeRequest(array $items): array
+    {
+        $requestData = [];
+        foreach ($items as $item) {
+            $item = (object) $item;
+
+            $key = match ($item->type) {
+                'file' => 'files',
+                'host' => 'hosts',
+                'prefix' => 'prefixes',
+                'tag' => 'tags',
+                default => throw new InvalidArgumentException('Invalid type'),
+            };
+
+            if ( ! isset($requestData[$key])) {
+                $requestData[$key] = [];
+            }
+
+            $requestData[$key][] = $item->content;
+        }
+
+        return $requestData;
+    }
+
+    /**
 	 * Send a request to Cloudflare API to purge cached resources.
 	 *
 	 * @param array{
@@ -70,10 +109,6 @@ readonly class ApiClient {
 			return ApiResponse::asFailure()
 			                  ->addError('cloudflare_rate_limit', 'Cloudflare rate limit reached.')
 			                  ->addMessage('retry', (int) wp_remote_retrieve_header($response, 'Retry-After'));
-		}
-
-		if ( $responseCode !== 200 ) {
-			return ApiResponse::asFailure()->addMessage($responseCode, 'Request failed.');
 		}
 
 		try {
