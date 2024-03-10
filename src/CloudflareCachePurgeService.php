@@ -16,48 +16,30 @@ class CloudflareCachePurgeService
         add_action('shutdown', [$this, 'onShutdown']);
     }
 
-    public function addFile(string $url): true|WP_Error {
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            return new WP_Error('invalid_url', 'Invalid URL', compact('url'));
-        }
-        $this->queue[] = ['type' => 'file', 'content' => $url];
-        return true;
+    public function addFile(string $url): null|WP_Error {
+        return $this->addItem('file', $url);
     }
 
-    public function addTag(string $tag): true|WP_Error {
-        if (empty($tag)) {
-            return new WP_Error('invalid_tag', 'Tag cannot be empty');
-        }
-        $this->queue[] = ['type' => 'tag', 'content' => $tag];
-        return true;
+    public function addTag(string $tag): null|WP_Error {
+        return $this->addItem('tag', $tag);
     }
 
-    public function addHost(string $host): true|WP_Error {
-        if (!filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-            return new WP_Error('invalid_host', 'Invalid host', compact('host'));
-        }
-        $this->queue[] = ['type' => 'host', 'content' => $host];
-        return true;
+    public function addHost(string $host): null|WP_Error {
+        return $this->addItem('host', $host);
     }
 
-    public function addPrefix(string $prefix): true|WP_Error {
-        if(str_contains($prefix, '://')) {
-            return new WP_Error('invalid_prefix', 'Invalid prefix, must not include URI schemes');
+    public function addPrefix(string $prefix): null|WP_Error {
+        return $this->addItem('prefix', $prefix);
+    }
+
+    public function addItem(string $type, string $content): ?WP_Error
+    {
+        if($validationError = PurgeQueueTable::validate($type, $content)) {
+            return $validationError;
         }
 
-        /** @var array<string, string> $components */
-        $components = parse_url('https://' . $prefix); // Prepend scheme to fit parse_url expectations
-        if(!$components) {
-            return new WP_Error('invalid_prefix', 'Invalid prefix, unable to parse', compact('prefix'));
-        }
-        if (!filter_var($components['host'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-            return new WP_Error('invalid_prefix', 'Invalid prefix, invalid hostname', compact('prefix'));
-        }
-        if (isset($components['query']) || isset($components['fragment'])) {
-            return new WP_Error('invalid_prefix', 'Invalid prefix, must not include query or fragment', compact('prefix'));
-        }
-        $this->queue[] = ['type' => 'prefix', 'content' => $prefix];
-        return true;
+        $this->queue[] = ['type' => $type, 'content' => $content];
+        return null;
     }
 
     public function onShutdown(): void
@@ -90,9 +72,9 @@ class CloudflareCachePurgeService
         if (empty($this->queue)) {
             return 0;
         }
-        $inserted = PurgeQueueTable::insertMany($this->queue);
+        [$inserted, $errors] = PurgeQueueTable::insertMany($this->queue);
         if(!$inserted) {
-            $error = new WP_Error('insert_error', 'Failed to insert items into purge queue', ['queue' => $this->queue]);
+            $error = new WP_Error('insert_error', 'Failed to insert items into purge queue', ['queue' => $this->queue, 'errors' => $errors]);
             Logger::logWpError($error);
             return $error;
         }

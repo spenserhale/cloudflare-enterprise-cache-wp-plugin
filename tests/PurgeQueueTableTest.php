@@ -31,7 +31,9 @@ class PurgeQueueTableTest extends \WP_UnitTestCase
         ];
         $count = count($values);
 
-        static::assertTrue(PurgeQueueTable::insertMany($values));
+        [$results, $errors] = PurgeQueueTable::insertMany($values);
+        static::assertTrue((bool) $results);
+        static::assertEmpty($errors);
 
         $items = PurgeQueueTable::selectQueue();
 
