@@ -24,7 +24,7 @@ class PurgeQueueTable
 
         return (array) $wpdb->get_results(sprintf(
             'SELECT id, type, content FROM %s',
-            $wpdb->prefix.self::TABLE
+            $wpdb->base_prefix.self::TABLE
         ));
     }
 
@@ -46,7 +46,7 @@ class PurgeQueueTable
         return [
             $wpdb->query(sprintf(
                 'INSERT INTO %s (type, content) VALUES %s',
-                $wpdb->prefix.self::TABLE,
+                $wpdb->base_prefix.self::TABLE,
                 implode(',', $values)
             )), $errors,
         ];
@@ -61,7 +61,7 @@ class PurgeQueueTable
         }
 
         return (bool) $wpdb->insert(
-            $wpdb->prefix.self::TABLE,
+            $wpdb->base_prefix.self::TABLE,
             compact('type', 'content')
         );
     }
@@ -147,7 +147,7 @@ class PurgeQueueTable
 
         return $wpdb->prepare(
             'SELECT id, type, content FROM %i WHERE type = %s LIMIT 30',
-            $wpdb->prefix.self::TABLE,
+            $wpdb->base_prefix.self::TABLE,
             $type
         );
     }
@@ -167,7 +167,7 @@ class PurgeQueueTable
 
         return $wpdb->query(sprintf(
             'DELETE FROM %s WHERE id IN (%s)',
-            $wpdb->prefix.self::TABLE,
+            $wpdb->base_prefix.self::TABLE,
             implode(',', $ids)
         ));
     }
@@ -177,14 +177,14 @@ class PurgeQueueTable
         global $wpdb;
 
         return $wpdb->delete(
-            $wpdb->prefix.self::TABLE,
+            $wpdb->base_prefix.self::TABLE,
             compact('id')
         );
     }
     public static function resetTable(): void
     {
         global $wpdb;
-        $table = $wpdb->prefix.self::TABLE;
+        $table = $wpdb->base_prefix.self::TABLE;
         $wpdb->query(sprintf('TRUNCATE TABLE %s; ALTER TABLE %s AUTO_INCREMENT = 1', $table, $table));
     }
 
@@ -205,7 +205,7 @@ class PurgeQueueTable
         require_once ABSPATH.'wp-admin/includes/upgrade.php';
 
         global $wpdb;
-        $table_name = $wpdb->prefix.self::TABLE;
+        $table_name = $wpdb->base_prefix.self::TABLE;
 
         return dbDelta(
             <<<SQL
