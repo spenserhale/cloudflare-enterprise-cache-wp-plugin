@@ -134,12 +134,12 @@ class PurgeQueueTable
      */
     public static function deleteInvalidItems(): int|bool
     {
-        return self::deleteManyItems(
-            array_filter(
-                self::all(),
-                static fn ($i) => PurgeInputValidator::validate($i->type, $i->content) instanceof WP_Error
-            )
+        $items = array_filter(
+            self::all(),
+            static fn($i) => PurgeInputValidator::validate($i->type, $i->content) instanceof WP_Error
         );
+
+        return ! empty($items) ? self::deleteManyItems($items) : 0;
     }
 
     /**
