@@ -31,14 +31,33 @@ class PurgeInputValidator
     public static function validate(string $type, string $content): ?WP_Error
     {
         return match ($type) {
-            'file' => ! filter_var($content, FILTER_VALIDATE_URL)
-                ? new WP_Error('invalid_file', 'Invalid URL', compact('content'))
-                : null,
+            'file' => self::validateFile($content),
             'tag' => empty($content) ? new WP_Error('invalid_tag', 'Invalid tag', compact('content')) : null,
             'host' => self::validateHost($content),
             'prefix' => self::validatePrefix($content),
             default => new WP_Error('invalid_type', 'Invalid type', compact('type', 'content'))
         };
+    }
+
+    private static function validateFile(string $content): ?WP_Error
+    {
+        $message = match (true) {
+            ! filter_var($content, FILTER_VALIDATE_URL) => 'Invalid URL',
+            default => self::validateHost(parse_url($content, PHP_URL_HOST))?->get_error_message()
+        };
+
+        return $message ? new WP_Error('invalid_file', $message, compact('content')) : null;
+    }
+
+    private static function validateHost(string $content): ?WP_Error
+    {
+        $message = match (true) {
+            ! filter_var($content, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) => 'Invalid hostname',
+            ! preg_match('#\.[a-z]{2,13}$#', $content) => 'Invalid hostname, missing TLD',
+            default => null
+        };
+
+        return $message ? new WP_Error('invalid_host', $message, compact('content')) : null;
     }
 
     private static function validatePrefix(string $content): ?WP_Error
@@ -50,19 +69,13 @@ class PurgeInputValidator
         /** @var array<string, string> $components */
         $components = parse_url('https://'.$content); // Prepend scheme to fit parse_url expectations
 
-        $message = match(true) {
+        $message = match (true) {
             ! $components => 'Invalid prefix, unable to parse',
-            ! filter_var($components['host'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) => 'Invalid prefix, invalid hostname',
             isset($components['query']) || isset($components['fragment']) => 'Invalid prefix, must not include query or fragment',
             substr_count($components['path'], '/') > 30 => 'Invalid prefix, path contains too many segments',
-            default => null
+            default => self::validateHost($components['host'])?->get_error_message()
         };
 
         return $message ? new WP_Error('invalid_prefix', $message, compact('content')) : null;
-    }
-
-    private static function validateHost(string $content): ?WP_Error
-    {
-        return ! filter_var($content, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ? new WP_Error('invalid_host', 'Invalid hostname', compact('content')) : null;
     }
 }

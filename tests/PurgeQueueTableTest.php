@@ -18,13 +18,14 @@ class PurgeQueueTableTest extends \WP_UnitTestCase
     public function testCreateAndDelete()
     {
         static $values = [
-            ['type' => 'file', 'content' => 'https://127.0.0.1/page'],
-            ['type' => 'file', 'content' => 'https://127.0.0.1/example'],
+            ['type' => 'file', 'content' => 'https://host2.example.com/'],
+            ['type' => 'file', 'content' => 'https://host2.example.com/example-page/'],
             ['type' => 'tag', 'content' => 'site:1'],
             ['type' => 'host', 'content' => 'host1.example.com'],
             ['type' => 'prefix', 'content' => 'hostname.tld/contact/wp-content/file.css'],
             ['type' => 'tag', 'content' => 'news'],
-            ['type' => 'file', 'content' => 'https://127.0.0.1/contact'],
+            ['type' => 'file', 'content' => 'https://host2.example.com/contact.html'],
+            ['type' => 'file', 'content' => 'https://host2.example.com/style.css'],
             ['type' => 'tag', 'content' => 'tag:sports'],
             ['type' => 'host', 'content' => 'host2.example.com'],
             ['type' => 'prefix', 'content' => 'domain.example/path/path/'],
@@ -42,7 +43,7 @@ class PurgeQueueTableTest extends \WP_UnitTestCase
 
         static::assertCount($count, $items);
         static::assertEquals('file', $items[0]->type);
-        static::assertEquals('https://127.0.0.1/page', $items[0]->content);
+        static::assertEquals('https://host2.example.com/', $items[0]->content);
 
         $deleted = PurgeQueueTable::deleteManyItems($items);
 

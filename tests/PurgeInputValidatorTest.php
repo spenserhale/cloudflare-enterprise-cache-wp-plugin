@@ -10,13 +10,27 @@ class PurgeInputValidatorTest extends \WP_UnitTestCase
     {
         static::assertInstanceOf(
             \WP_Error::class,
-            PurgeInputValidator::validate('host', 'https://www.drschalit.comfacial-cosmetic-surgery/brow-lift/'),
+            PurgeInputValidator::validate('host', 'https://www.johnsmith.comfacial-cosmetic-surgery/brow-lift/'),
             'Expected error for invalid host'
         );
 
         static::assertNull(
-            PurgeInputValidator::validate('host', 'www.drschalit.com'),
+            PurgeInputValidator::validate('host', 'www.johnsmith.com'),
             'Expected no error for valid host'
+        );
+    }
+
+    public function testFileValidation()
+    {
+        static::assertInstanceOf(
+            \WP_Error::class,
+            PurgeInputValidator::validate('file', 'https://www.johnsmith.comfacial-cosmetic-surgery/brow-lift/'),
+            'Expected error for invalid file'
+        );
+
+        static::assertNull(
+            PurgeInputValidator::validate('file', 'https://www.johnsmith.com/facial-cosmetic-surgery/brow-lift/'),
+            'Expected no error for valid file'
         );
     }
 }
