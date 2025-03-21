@@ -3,7 +3,7 @@
  * Plugin Name: Cloudflare Enterprise Cache
  * Description: Automation for managing Cloudflare enterprise cache for WordPress sites
  * Version: 1.0.0
- * Requires PHP: 8.2
+ * Requires PHP: 8.3
  * Author: Spenser Hale
  * Author URI: https://www.spenserhale.com/
  * License: GPL v3
@@ -62,6 +62,7 @@ function class_autoloader(string $class): void
 			ApiResponse::class => __DIR__ . '/src/ApiResponse.php',
 			Logger::class => __DIR__ . '/src/Logger.php',
 			LogLevel::class => __DIR__ . '/src/LogLevel.php',
+            PurgeInputValidator::class => __DIR__ . '/src/PurgeInputValidator.php',
 			PurgeQueueService::class => __DIR__ . '/src/PurgeQueueService.php',
 			PurgeQueueTable::class => __DIR__ . '/src/PurgeQueueTable.php',
 		];

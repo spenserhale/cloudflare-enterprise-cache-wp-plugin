@@ -22,18 +22,21 @@ class PurgeQueueTableTest extends \WP_UnitTestCase
             ['type' => 'file', 'content' => 'https://127.0.0.1/example'],
             ['type' => 'tag', 'content' => 'site:1'],
             ['type' => 'host', 'content' => 'host1.example.com'],
-            ['type' => 'prefix', 'content' => '/images/'],
+            ['type' => 'prefix', 'content' => 'hostname.tld/contact/wp-content/file.css'],
             ['type' => 'tag', 'content' => 'news'],
             ['type' => 'file', 'content' => 'https://127.0.0.1/contact'],
             ['type' => 'tag', 'content' => 'tag:sports'],
             ['type' => 'host', 'content' => 'host2.example.com'],
-            ['type' => 'prefix', 'content' => '/css/']
+            ['type' => 'prefix', 'content' => 'domain.example/path/path/'],
         ];
         $count = count($values);
 
         [$results, $errors] = PurgeQueueTable::insertMany($values);
-        static::assertTrue((bool) $results);
-        static::assertEmpty($errors);
+        static::assertTrue((bool) $results, 'Insert failed');
+
+        $messages = array_map(fn(\WP_Error $error) => $error->get_error_message(), $errors);
+
+        static::assertEquals([], $messages, 'Insert has errors');
 
         $items = PurgeQueueTable::selectQueue();
 
@@ -44,6 +47,6 @@ class PurgeQueueTableTest extends \WP_UnitTestCase
         $deleted = PurgeQueueTable::deleteManyItems($items);
 
         static::assertEquals($count, $deleted);
-        static::assertEmpty(PurgeQueueTable::selectQueue());
+        static::assertEmpty(PurgeQueueTable::selectQueue(), 'Queue not empty');
     }
 }

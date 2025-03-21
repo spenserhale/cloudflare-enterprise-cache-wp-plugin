@@ -34,7 +34,7 @@ class CloudflareCachePurgeService
 
     public function addItem(string $type, string $content): ?WP_Error
     {
-        if($validationError = PurgeQueueTable::validate($type, $content)) {
+        if($validationError = PurgeInputValidator::validate($type, $content)) {
             return $validationError;
         }
 

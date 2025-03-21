@@ -48,7 +48,7 @@ class PurgeQueueService {
                 'Failed to delete items from purge queue',
                 [
                     'items' => $items,
-                    'error' => PurgeQueueTable::lastDbError(),
+                    'error' => $GLOBALS['wpdb']->last_error,
                 ]
             );
             Logger::logWpError($error);
